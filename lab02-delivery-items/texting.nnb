@@ -1,0 +1,28 @@
+Add items
+{
+  "itemCode": "NI10001",
+  "brand": "Nike",
+  "address": "Jurong",
+  "urgency": "Medium"
+}
+
+
+{
+  "itemCode": "NI10001",
+  "brand": "Nike",
+  "address": "Jurong",
+  "urgency": "Medium",
+  "recvDate": {
+    "year": 2024,
+    "month": 7,
+    "day": 16
+  }
+}
+
+Comments
+{
+  "reply": "NIL",
+  "note": "This order should include ONE free gift!",
+  "orderRemarks": "NIL"
+}
+
