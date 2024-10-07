@@ -26,3 +26,7 @@ Comments
   "orderRemarks": "NIL"
 }
 
+{
+  "email": "abs@abc.com",
+  "password": "abc123"
+}

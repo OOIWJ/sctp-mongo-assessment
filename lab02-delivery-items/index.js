@@ -312,6 +312,53 @@ async function main() {
         }
     });
 
+    //update comments
+    app.put('/goods/:goodsId/comments/:commentsId', async (req, res) => {
+        try {
+            const goodsId = req.params.goodsId;
+            const commentsId = req.params.commentsId;
+            const { reply, note, orderRemarks } = req.body;
+    
+            // Basic validation
+            if (!reply || !note || !orderRemarks) {
+                return res.status(400).json({ error: 'Missing required fields' });
+            }
+    
+            // Create the updated comments object
+            const updatedComments = {
+                _id: new ObjectId(commentsId),
+                reply,
+                note,
+                orderRemarks,
+                date: new Date()  // Update the date to reflect the edit time
+            };
+    
+            // Update the specific comments in the goods document
+            const result = await db.collection('goods').updateOne(
+                { 
+                    _id: new ObjectId(goodsId),
+                    // "comments.comments_id": new ObjectId(commentsId)
+                    "comments._id": new ObjectId(commentsId)
+                },
+                { 
+                    $set: { "comments.$": updatedComments }
+                }
+            );
+    
+            if (result.matchedCount === 0) {
+                return res.status(404).json({ error: 'Goods or comments not found' });
+            }
+    
+            res.json({
+                message: 'Comments updated successfully',
+                commentsId: commentsId
+            });
+        } catch (error) {
+            console.error('Error updating comments:', error);
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    });
+
     //Lab 7, Step 6| Delete a comments Route
     app.delete('/goods/:goodsId/comments/:commentsId', async (req, res) => {
         try {
@@ -323,7 +370,7 @@ async function main() {
                 { _id: new ObjectId(goodsId) },
                 { 
                     $pull: { 
-                        comments: { comments_id: new ObjectId(commentsId) }
+                        comments: { _id: new ObjectId(commentsId) }
                     }
                 }
             );
@@ -333,7 +380,7 @@ async function main() {
             }
     
             if (result.modifiedCount === 0) {
-                return res.status(404).json({ error: 'Comments not found' });
+                return res.status(404).json({ error: 'Comments not not found' });
             }
     
             res.json({
