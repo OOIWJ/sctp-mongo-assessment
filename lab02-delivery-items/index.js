@@ -28,11 +28,11 @@ const verifyToken = (req, res, next) => {
     const token = authHeader && authHeader.split(' ')[1];
     if (!token) return res.sendStatus(403);
     jwt.verify(token, process.env.TOKEN_SECRET, (err, user) => {
-      if (err) return res.sendStatus(403);
-      req.user = user;
-      next();
+        if (err) return res.sendStatus(403);
+        req.user = user;
+        next();
     });
-  };
+};
 
 
 // !! Enable processing JSON data
@@ -151,7 +151,7 @@ async function main() {
         }
     });
 
-    //Lab 4, Step 2| POST goods route
+    //Lab 4, POST goods route
     app.post('/goods', async (req, res) => {
         try {
             const { itemCode, brand, address, urgency, recvDate } = req.body;
@@ -172,8 +172,8 @@ async function main() {
                 year: new Date().getFullYear(),
                 month: new Date().getMonth() + 1,
                 day: new Date().getDate()
-              };
-              
+            };
+
             // Create the new goods object
             const newGoods = {
                 itemCode,
@@ -202,7 +202,7 @@ async function main() {
         }
     });
 
-    //Lab 5, Step 1| Add a PUT route for goods
+    //Lab 5, Add a PUT route for goods
     app.put('/goods/:id', async (req, res) => {
         try {
             const goodsId = req.params.id;
@@ -253,7 +253,7 @@ async function main() {
         }
     });
 
-    //Lab 8, Step 1| Delete goods
+    //Lab 6, Delete goods
     app.delete('/goods/:id', async (req, res) => {
         try {
             const goodsId = req.params.id;
@@ -318,12 +318,12 @@ async function main() {
             const goodsId = req.params.goodsId;
             const commentsId = req.params.commentsId;
             const { reply, note, orderRemarks } = req.body;
-    
+
             // Basic validation
             if (!reply || !note || !orderRemarks) {
                 return res.status(400).json({ error: 'Missing required fields' });
             }
-    
+
             // Create the updated comments object
             const updatedComments = {
                 _id: new ObjectId(commentsId),
@@ -332,23 +332,22 @@ async function main() {
                 orderRemarks,
                 date: new Date()  // Update the date to reflect the edit time
             };
-    
+
             // Update the specific comments in the goods document
             const result = await db.collection('goods').updateOne(
-                { 
+                {
                     _id: new ObjectId(goodsId),
-                    // "comments.comments_id": new ObjectId(commentsId)
                     "comments._id": new ObjectId(commentsId)
                 },
-                { 
+                {
                     $set: { "comments.$": updatedComments }
                 }
             );
-    
+
             if (result.matchedCount === 0) {
                 return res.status(404).json({ error: 'Goods or comments not found' });
             }
-    
+
             res.json({
                 message: 'Comments updated successfully',
                 commentsId: commentsId
@@ -359,30 +358,30 @@ async function main() {
         }
     });
 
-    //Lab 7, Step 6| Delete a comments Route
+    //Lab 7, Delete a comments
     app.delete('/goods/:goodsId/comments/:commentsId', async (req, res) => {
         try {
             const goodsId = req.params.goodsId;
             const commentsId = req.params.commentsId;
-    
+
             // Remove the specific comments from the goods document
             const result = await db.collection('goods').updateOne(
                 { _id: new ObjectId(goodsId) },
-                { 
-                    $pull: { 
+                {
+                    $pull: {
                         comments: { _id: new ObjectId(commentsId) }
                     }
                 }
             );
-    
+
             if (result.matchedCount === 0) {
                 return res.status(404).json({ error: 'Goods not found' });
             }
-    
+
             if (result.modifiedCount === 0) {
                 return res.status(404).json({ error: 'Comments not not found' });
             }
-    
+
             res.json({
                 message: 'Comments deleted successfully'
             });
@@ -402,34 +401,34 @@ async function main() {
             "message": "New user account",
             "result": result
         })
-      })
+    })
 
-      //Lab 8, Step 3: Create a Log In Route
-      app.post('/login', async (req, res) => {
+    //Lab 8, Step 3: Create a Log In Route
+    app.post('/login', async (req, res) => {
         const { email, password } = req.body;
         if (!email || !password) {
-          return res.status(400).json({ message: 'Email and password are required' });
+            return res.status(400).json({ message: 'Email and password are required' });
         }
         const user = await db.collection('users').findOne({ email: email });
         if (!user) {
-          return res.status(404).json({ message: 'User not found' });
+            return res.status(404).json({ message: 'User not found' });
         }
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
-          return res.status(401).json({ message: 'Invalid password' });
+            return res.status(401).json({ message: 'Invalid password' });
         }
         const accessToken = generateAccessToken(user._id, user.email);
         res.json({ accessToken: accessToken });
-      });
+    });
 
-      //Lab 8, Step 4: Protect Routes with a Middleware
-      app.get('/protected-route', verifyToken, (req, res) => {
+    //Lab 8, Step 4: Protect Routes with a Middleware
+    app.get('/protected-route', verifyToken, (req, res) => {
         // Route handler code here
-      });
+    });
 
-      app.get('/profile', verifyToken, (req, res) => {
+    app.get('/profile', verifyToken, (req, res) => {
         res.json({ message: 'This is a protected route', user: req.user });
-      });
+    });
 }
 
 main();
